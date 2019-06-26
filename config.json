@@ -1,10 +1,10 @@
 {
-	"authUrl": "https://login.sipgate.com/auth/realms/third-party/protocol/openid-connect/auth",
-	"tokenUrl": "https://login.sipgate.com/auth/realms/third-party/protocol/openid-connect/token",
-	"clientId": "YOUR_CLIENT_ID",
-	"clientSecret": "YOUR_CLIENT_SECRET",
-	"oauthScope": "account:read",
-	"redirectUri": "http://localhost:8080/oauth",
+	"auth_url": "https://login.sipgate.com/auth/realms/third-party/protocol/openid-connect/auth",
+	"token_url": "https://login.sipgate.com/auth/realms/third-party/protocol/openid-connect/token",
+	"client_id": "YOUR_CLIENT_ID",
+	"client_secret": "YOUR_CLIENT_SECRET",
+	"oauth_scope": "account:read",
+	"redirect_uri": "http://localhost:8080/oauth",
 	"port": 8080,
-	"testApiEndpoint": "https://api.sipgate.com/v2/account"
+	"test_api_endpoint": "https://api.sipgate.com/v2/account"
 }
