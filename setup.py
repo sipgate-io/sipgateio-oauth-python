@@ -14,9 +14,9 @@ setup(
     version='0.1.0',
     description='A demonstration on how to authenticate against the sipgate REST API using the OAuth mechanism.',
     long_description=readme,
-    author='sipgate',
-    author_email='',
-    url='',
+    author='sipgate.io Team',
+    author_email='io-team@sipgate.de',
+    url='https://github.com/sipgate-io/sipgateio-oauth-python/',
     license=license,
     packages=find_packages(exclude=())
 )
