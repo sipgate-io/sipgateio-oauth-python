@@ -62,6 +62,7 @@ def get_authorization_url():
         'client_secret': config['client_secret'],
         'redirect_uri': config['redirect_uri'],
         'state': session_state,
+        'scope': config['oauth_scope'],
         'response_type': 'code'
     }
     return config['auth_url'] + "?" + urlencode(query_parameters)
