@@ -37,28 +37,28 @@ In the Privacy Policy URL and Terms of Use URL you must supply in the **New clie
 
 
 ## Configuration
-In the [config.json](./config.json) file located in the project root directory insert `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET` obtained in Step 7 above:
+In the [.env](./.env) file located in the project root directory insert `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET` obtained in Step 7 above:
 
 ```json
 ...
-"client_id": "YOUR_CLIENT_ID",
-"client_secret": "YOUR_CLIENT_SECRET",
+CLIENT_ID="YOUR_CLIENT_ID"
+CLIENT_SECRET="YOUR_CLIENT_SECRET"
 ...
 ```
 
-The `oauth_scope` defines what kind of access your Client should have to your account and is specific to your respective application. In this case, since we only want to get your basic account information as an example, the scope `account:read` is sufficient.
+The `OAUTH_SCOPE` defines what kind of access your Client should have to your account and is specific to your respective application. In this case, since we only want to get your basic account information as an example, the scope `account:read` is sufficient.
 
 ```
-oauth_scope=account:read
+OAUTH_SCOPE=account:read
 ```
 > Visit https://developer.sipgate.io/rest-api/oauth2-scopes/ to see all available scopes
 
-The `redirect_uri` which we have previously used in the creation of our Client is supplied to the sipgate login page to specify where you want to be redirected after successful login. As explained above, our application provides a small web server itself that handles HTTP requests directed at `http://localhost:8080/oauth`. In case there is already a service listening on port `8080` of your machine you can choose a different port number, but be sure to adjust both the `redirect_uri` and the `port` property accordingly.
+The `REDIRECT_URI` which we have previously used in the creation of our Client is supplied to the sipgate login page to specify where you want to be redirected after successful login. As explained above, our application provides a small web server itself that handles HTTP requests directed at `http://localhost:8080/oauth`. In case there is already a service listening on port `8080` of your machine you can choose a different port number, but be sure to adjust both the `REDIRECT_URI` and the `PORT` property accordingly.
 
 ```json
 ...
-"redirectUri": "http://localhost:8080/oauth",
-"port": 8080,
+REDIRECT_URI="http://localhost:8080/oauth",
+PORT=8080,
 ...
 ```
 
@@ -85,9 +85,9 @@ $ python3 main.py
 
 
 ## How It Works
-In the [main.py](./main.py) we first load the configuration file [config.json](./config.json).
+In the [main.py](./main.py) we first load the configuration file [.env](./.env).
 ```python
-config = load_config()
+load_dotenv()
 ```
 
 We then generate a unique identifier `session_state` for our authorization process so that we can match a server response to our request later.
@@ -145,18 +145,18 @@ The `request_token_set` function fetches the tokens from the authorization serve
 ```python
 def request_token_set(code):
     request_body = {
-        'redirect_uri': config['redirect_uri'],
-        'client_id': config['client_id'],
-        'client_secret': config['client_secret'],
+        'redirect_uri': os.environ.get("REDIRECT_URI"),
+        'client_id': os.environ.get("CLIENT_ID"),
+        'client_secret': os.environ.get("CLIENT_SECRET"),
         'code': code,
         'grant_type': 'authorization_code'
     }
-    response = requests.post(config['token_url'], request_body)
+    response = requests.post(os.environ.get("TOKEN_URL"), request_body)
 
     response_body = response.json()
     return response_body['access_token'], response_body['refresh_token']
 ```
-We use requests to send a POST-Request to the authorization server to obtain a set of tokens (Access-Token and Refresh-Token). The POST-Request must contain the `client_id`, `client_secret`, `redirect_uri`, `code` and `grant_type` as form data.
+We use requests to send a POST-Request to the authorization server to obtain a set of tokens (Access-Token and Refresh-Token). The POST-Request must contain the `CLIENT_ID`, `CLIENT_SECRET`, `REDIRECT_URI`, `code` and `grant_type` as form data.
 
 The `refresh_token_set` function is very similar to the `request_token_set` function. It differs in that we set the `grant_type` to `refresh_token` to indicate that we want to refresh our token, and provide the `refresh_token_set` we got from the `request_token_set` function instead of the `code`.
 > ```python
@@ -173,7 +173,7 @@ def query_test_endpoint(access_token):
         'Authorization': 'Bearer {}'.format(access_token),
         'Content-Type': 'application/json'
     }
-    response = requests.get(config['test_api_endpoint'], headers=headers)
+    response = requests.get(os.environ.get("TEST_API_ENDPOINT"), headers=headers)
     return response.json()
 ```
 To use the token for authorization we set the `Authorization` header to `Bearer` followed by a space and the `access_token` we obtained with the `request_token_set` or `refresh_token_set` function.
@@ -189,7 +189,7 @@ Possible reasons are:
 ### "OSError: [Errno 98] Address already in use"
 Possible reasons are:
 - another instance of the application is running
-- the port configured in the [config.json](./config.json) file is used by another application
+- the port configured in the [.env](./.env) file is used by another application
 
 
 ### "PermissionError: [Errno 13] Permission denied"
@@ -199,13 +199,13 @@ Possible reasons are:
 
 ### "invalid parameter: redirect_uri"
 Possible reasons are:
-- the redirect_uri in the [config.json](./config.json) is invalid or not set
-- the redirect_uri is not correctly configured the sipgate Web App (You can find more information about the configuration process in the [Setup OAuth with sipgate](#setup-oauth-with-sipgate) section)
+- the REDIRECT_URI in the [.env](./.env) is invalid or not set
+- the REDIRECT_URI is not correctly configured the sipgate Web App (You can find more information about the configuration process in the [Setup OAuth with sipgate](#setup-oauth-with-sipgate) section)
 
 
 ### "client not found" or "invalid client_secret"
 Possible reasons are:
-- the client_id or client_secret configured in the [config.json](./config.json) is invalid. You can check them in the sipgate Web App. See [Setup OAuth with sipgate](#setup-oauth-with-sipgate)
+- the CLIENT_ID or CLIENT_SECRET configured in the [.env](./.env) is invalid. You can check them in the sipgate Web App. See [Setup OAuth with sipgate](#setup-oauth-with-sipgate)
 
 
 ## Related
@@ -229,6 +229,8 @@ This code uses the following external libraries
 + requests:
   + Licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
   + Website: http://docs.python-requests.org/en/master/
++ python-dotenv:
+  + Website: https://pypi.org/project/python-dotenv/
 
 
 ----

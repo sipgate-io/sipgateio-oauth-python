@@ -1,19 +1,15 @@
-import json
+import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from threading import Thread
 from urllib.parse import urlencode, urlparse, parse_qs
 from uuid import uuid4
+from dotenv import load_dotenv
 
 import requests
 
 
-def load_config():
-    with open('config.json') as config_file:
-        return json.load(config_file)
-
-
 def start_server():
-    port = config['port']
+    port = int(os.environ.get("PORT"))
     print('Server listening on: http://localhost:{}'.format(port))
     server_address = ('localhost', port)
     httpd = HTTPServer(server_address, OAuthWebServerHandler)
@@ -22,13 +18,13 @@ def start_server():
 
 def request_token_set(code):
     request_body = {
-        'redirect_uri': config['redirect_uri'],
-        'client_id': config['client_id'],
-        'client_secret': config['client_secret'],
+        'redirect_uri': os.environ.get("REDIRECT_URI"),
+        'client_id': os.environ.get("CLIENT_ID"),
+        'client_secret': os.environ.get("CLIENT_SECRET"),
         'code': code,
         'grant_type': 'authorization_code'
     }
-    response = requests.post(config['token_url'], request_body)
+    response = requests.post(os.environ.get("TOKEN_URL"), request_body)
 
     response_body = response.json()
     return response_body['access_token'], response_body['refresh_token']
@@ -36,12 +32,12 @@ def request_token_set(code):
 
 def refresh_token_set(token):
     request_body = {
-        'client_id': config['client_id'],
-        'client_secret': config['client_secret'],
+        'client_id': os.environ.get("CLIENT_ID"),
+        'client_secret': os.environ.get("CLIENT_SECRET"),
         'refresh_token': token,
         'grant_type': 'refresh_token'
     }
-    response = requests.post(config['token_url'], request_body)
+    response = requests.post(os.environ.get("TOKEN_URL"), request_body)
 
     response_body = response.json()
     return response_body['access_token'], response_body['refresh_token']
@@ -52,20 +48,20 @@ def query_test_endpoint(access_token):
         'Authorization': 'Bearer {}'.format(access_token),
         'Content-Type': 'application/json'
     }
-    response = requests.get(config['test_api_endpoint'], headers=headers)
+    response = requests.get(os.environ.get("TEST_API_ENDPOINT"), headers=headers)
     return response.json()
 
 
 def get_authorization_url():
     query_parameters = {
-        'client_id': config['client_id'],
-        'client_secret': config['client_secret'],
-        'redirect_uri': config['redirect_uri'],
+        'client_id': os.environ.get("CLIENT_ID"),
+        'client_secret': os.environ.get("CLIENT_SECRET"),
+        'redirect_uri': os.environ.get("REDIRECT_URI"),
         'state': session_state,
-        'scope': config['oauth_scope'],
+        'scope': os.environ.get("OAUTH_SCOPE"),
         'response_type': 'code'
     }
-    return config['auth_url'] + "?" + urlencode(query_parameters)
+    return os.environ.get("AUTH_URL") + "?" + urlencode(query_parameters)
 
 
 class OAuthWebServerHandler(BaseHTTPRequestHandler):
@@ -113,6 +109,6 @@ def main():
 
 
 if __name__ == "__main__":
-    config = load_config()
+    load_dotenv()
     session_state = str(uuid4())
     main()
